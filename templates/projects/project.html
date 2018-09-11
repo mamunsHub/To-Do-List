@@ -1,0 +1,91 @@
+{% extends "projects/base.html" %}
+{% load bootstrap4 %}
+{% load static %}
+
+{% block link %}
+{% endblock link %}
+
+{% block content %}
+<aside class="sidebar">
+    <nav>
+        <ul>
+            <li><a href="{% url 'projects:projects' %}">Today</a></li>
+            <hr>
+            {% for project in projects %}
+            <li><a href="{% url 'projects:project' project.id %}">{{ project }}</a></li>
+            {% endfor %}
+            <li><input type="text" id="p-title" style="width:150px;">
+                <button class="btn btn-success fa fa-plus" onclick="addProject()"></button>
+            </li>
+        </ul>
+    </nav>
+</aside>
+
+<section class="main">
+    <h2>{{ project.title }}</h2>
+    <table id="tasktable" class="table table-striped">
+        <thead>
+            <th></th>
+            <th>Title</th>
+            <th>Date</th>
+            <th>Repeat</th>
+            <th>Edit</th>
+            <th>Delete</th>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            {% if task.outdated %}
+            <tr style="color: red;">
+            {% else %}
+            <tr>
+            {% endif %}
+                <td><input type="checkbox" onclick="completeTask('{{ project.id }}', '{{ task.id }}', this)"></td>
+                <td>
+                    {{ task.title }}&nbsp;
+                    {% if task.priority == 'm' %}
+                    <i class="fa fa-star" style="color:#EB984E; font-size:1.3em;"></i>
+                    {% elif task.priority == 'h' %}
+                    <i class="fa fa-star" style="color:#B03A2E; font-size:1.3em;"></i>
+                    {% endif %}
+                </td>
+                <td>{{ task.date }}</td>
+                <td>{{ task.get_repeat_display }}</td>
+                <td><a type="button" href="{% url 'projects:edit_task' project.id task.id %}" class="btn btn-primary btn-xs fa fa-edit"></a></td>
+                <td><button onclick="openDeleteModal('{{ task.id }}')" class="btn btn-danger btn-xs fa fa-trash"></button></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button data-toggle="modal" data-target="#add" class="btn btn-success btn-lg fa fa-plus"> Add Task</button>
+
+    <!--Delete Task Modal-->
+    <div class="modal fade" id="delete" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="alert alert-danger"><i class="fa fa-exclamation-triangle"></i> Are you sure you want to delete this task?</div>
+                </div>
+                <div class="modal-footer ">
+                    <button id="dlt-btn" onclick="deleteTask('{{ project.id }}')" class="btn btn-success" ><i class="fa fa-check"></i> Yes</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Add Task Modal-->
+    <div class="modal fade" id="add" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <form action="{% url 'projects:project' project.id %}" method="post" id="add-form">
+                        {% csrf_token %}
+                        {% bootstrap_form add_form %}
+                        <button type="submit" name="action" value="add" class="btn btn-success btn-lg" style="width:100%"><i class="fa fa-plus"></i> Add</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}

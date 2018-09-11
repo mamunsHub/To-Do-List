@@ -1,0 +1,30 @@
+{% extends "projects/base.html" %}
+{% load bootstrap4 %}
+{% load static %}
+
+{% block link %}
+<style>
+    .container {
+        background: #ddd;
+        padding: 20px;
+    }
+    .panel-heading {
+        text-align: center;
+    }
+</style>
+{% endblock link %}
+
+{% block content %}
+<div class="panel container">
+    <div class="panel-heading">
+        <h2>Edit Task</h2>
+    </div>
+    <div class="panel-body">
+        <form action="{% url 'projects:edit_task' project.id task.id %}" method="post" class="form">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            <button type="submit" class="btn btn-success btn-block"><i class="fa fa-check"></i>Update Task</button>
+        </form>
+    </div>
+</div>
+{% endblock content %}

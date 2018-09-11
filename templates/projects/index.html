@@ -1,0 +1,31 @@
+{% extends "projects/base.html" %}
+{% load static %}
+
+{% block link %}
+<style>
+    body {
+        background: url("{% static 'img/index-bg.jpg' %}");
+        background-size: cover;
+    }
+    .intro {
+        margin: 15% 0 0 20%;
+        font-family: 'Kaushan Script', cursive;
+        font-size: 1.5em;
+        color: black;
+        -ms-transform: rotate(-15deg); /* IE 9 */
+        -webkit-transform: rotate(-15deg); /* Safari */
+        transform: rotate(-15deg); /* Standard syntax */
+    }
+</style>
+{% endblock link %}
+
+{% block header %}
+{% endblock header %}
+
+{% block content %}
+    <div class="intro">
+        Organize your time!<br>
+        Keep track of what you need to do!<br>
+        <a href="{% url 'users:register' %}">Sign up</a> or <a href="{% url 'users:login' %}">Log in</a> to get started
+    </div>
+{% endblock content %}
