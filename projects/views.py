@@ -1,11 +1,13 @@
+from time import sleep
+from dateutil.relativedelta import relativedelta
+import datetime
+
 from django.shortcuts import render
 from django.contrib.auth.views import login_required
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
-from time import sleep
-from dateutil.relativedelta import relativedelta
+
 from .models import Project, Task, TaskForm
-import datetime
 
 
 def index(request):
@@ -17,19 +19,23 @@ def index(request):
 @login_required
 def projects(request):
     if request.method == 'POST':
+        # if post method is ajax call, delete task with given ID
         if request.is_ajax():
             if request.POST['action'] == 'delete':
                 task = Task.objects.get(id=request.POST['task_id'])
                 task.delete()
                 return JsonResponse({'deleted': True})
+            # if post not ajax call, create new project
             else:
                 project = Project(title=request.POST['title'].strip(), owner=request.user)
                 project.save()
                 return HttpResponseRedirect(reverse('projects:projects'))
     else:
+        # if request get, fetch all tasks of today
         now = datetime.datetime.now()
         tasks = []
         projects = Project.objects.filter(owner=request.user).order_by('title')
+        # if task date before today, mark them outdated
         for project in projects:
             task_holder = Task.objects.filter(project=project, date=now.date()).order_by('date')
             for task in task_holder:
@@ -61,23 +67,16 @@ def project(request, project_id):
         context = {'projects': projects, 'project': project, 'tasks': tasks, 'add_form': add_form}
 
     else:
+        # if ajax call for deletion, delete task with given ID
         if request.is_ajax():
             if request.POST['action'] == 'delete':
                 task = Task.objects.get(id=request.POST['task_id'])
                 task.delete()
-
+        # if ajax call for add task, save form from post if valid
         elif request.POST['action'] == 'add':
             add_form = TaskForm(data=request.POST)
             if add_form.is_valid():
                 add_form.save()
-        elif request.POST['action'] == 'update':
-            task = Task.objects.get(id=int(request.POST['task_id']))
-            task.title = request.POST['title']
-            if request.POST['date']:
-                task.date = request.POST['date']
-            task.priority = request.POST['priority']
-            task.repeat = request.POST['repeat']
-            task.save()
         return HttpResponseRedirect(reverse('projects:project', args=[project_id]))
 
     return render(request, 'projects/project.html', context)
@@ -87,15 +86,18 @@ def project(request, project_id):
 def edit_task(request, project_id, task_id):
     project = Project.objects.get(id=project_id)
     task = Task.objects.get(id=task_id)
+    # if get method, send task form with current data
     if request.method != 'POST':
         form = TaskForm(instance=task)
     else:
+        # if no repeat, delete task
         if request.is_ajax():
             if task.repeat == 'n':
                 task.delete()
                 sleep(.5)
                 return JsonResponse({'task': 'deleted'})
             else:
+                # if repeat, update task date according to repeat duration
                 if not task.date:
                     task.date = datetime.datetime.now()
                 if task.repeat == 'd':
@@ -110,6 +112,7 @@ def edit_task(request, project_id, task_id):
                 sleep(.5)
                 return JsonResponse({'task': 'updated'})
         else:
+            # if request post, save new task data
             form = TaskForm(instance=task, data=request.POST)
             if form.is_valid():
                 form.save()

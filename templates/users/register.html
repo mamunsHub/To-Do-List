@@ -1,10 +1,13 @@
 {% extends "projects/base.html" %}
+{% load bootstrap4 %}
 
 {% block content %}
-    <form method="post" action="{% url 'users:register' %}">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button name="submit">register</button>
-        <input type="hidden" name="next" value="{% url 'projects:index' %}" />
-    </form>
+    <div class="container" style="margin:4% 15%;">
+        <form method="post" action="{% url 'users:register' %}">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            <button name="submit">register</button>
+            <input type="hidden" name="next" value="{% url 'projects:index' %}" />
+        </form>
+    </div>
 {% endblock content %}
